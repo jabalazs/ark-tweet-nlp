@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Arrays;
 
 import cmu.arktweetnlp.impl.ModelSentence;
 import cmu.arktweetnlp.impl.Sentence;
@@ -40,6 +41,7 @@ public class RunTagger {
 
 	public boolean noOutput = false;
 	public boolean justTokenize = false;
+    public boolean justPosTag = false;
 	
 	public static enum Decoder { GREEDY, VITERBI };
 	public Decoder decoder = Decoder.GREEDY; 
@@ -119,7 +121,14 @@ public class RunTagger {
 			
 			Sentence sentence = new Sentence();
 			
-			sentence.tokens = Twokenize.tokenizeRawTweetText(text);
+            if (!justPosTag) {
+                sentence.tokens = Twokenize.tokenizeRawTweetText(text);
+            } else {
+                List<String> split_text = Arrays.asList(text.trim().split(" "));
+                sentence.tokens = split_text;
+            }
+
+
 			ModelSentence modelSentence = null;
 
 			if (sentence.T() > 0 && !justTokenize) {
@@ -320,6 +329,9 @@ public class RunTagger {
 			} else if (args[i].equals("--just-tokenize")) {
 				tagger.justTokenize = true;
 				i += 1;
+			} else if (args[i].equals("--just-pos-tag")) {
+				tagger.justPosTag = true;
+				i += 1;
 			} else if (args[i].equals("--decoder")) {
 				if (args[i+1].equals("viterbi")) tagger.decoder = Decoder.VITERBI;
 				else if (args[i+1].equals("greedy"))  tagger.decoder = Decoder.GREEDY;
@@ -402,6 +414,7 @@ public class RunTagger {
 "\n\nOptions:" +
 "\n  --model <Filename>        Specify model filename. (Else use built-in.)" +
 "\n  --just-tokenize           Only run the tokenizer; no POS tags." +
+"\n  --just-pos-tag            Only run the POS tagger; no tokenizing." +
 "\n  --quiet                   Quiet: no output" +
 "\n  --input-format <Format>   Default: auto" +
 "\n                            Options: json, text, conll" +
